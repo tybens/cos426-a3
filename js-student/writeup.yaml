@@ -1,0 +1,156 @@
+# This file was generated for the student.
+
+# For information on YAML, see: https://yaml.org/spec/1.2.2/#chapter-2-language-overview
+
+# YAML strings can be unquoted, quoted with single quotes, or quoted with
+# double quotes. The type of quoting matters if you have special characters in
+# the string, such as ":" or "#". To avoid ambiguity, we will use "block
+# scalar" strings for `description_html`, `link`, and `caption_html`, in which
+# the string starts on the next line and you can put any character you want.
+# For more information, see: https://yaml-multiline.info/
+
+# In `description_html` and `caption_html`, feel free to use HTML tags as you
+# wish. These will show up as-is in `writeup.html`.
+
+# Please fill in your name and NetID
+# Your NetID is the part of your email before "@princeton.edu"
+student:
+  name: Tyler Benson
+  netid: tb19
+
+# If you would like to use any of your free late days on this assignment, please
+# indicate how many here. This should be a non-negative integer; if you would
+# like to add any special comments (for example, to reference an Ed post asking
+# for special circumstances), please write a YAML comment here with the '#'
+# character.
+late_days_used: 0
+
+# Please list the netids of whom you collaborated with for this assignment.
+collaboration: []
+
+features:
+  - feature: Trace Ray
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Trace Ray goes here...)
+    results: []
+
+  - feature: Calculate Color
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Calculate Color goes here...)
+    results: []
+
+  - feature: Triangle
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Triangle goes here...)
+    results: []
+
+  - feature: Sphere
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Sphere goes here...)
+    results: []
+
+  - feature: Axis-aligned Box
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Axis-aligned Box goes here...)
+    results: []
+
+  - feature: Cylinder
+    required: false
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Cylinder goes here...)
+    results: []
+
+  - feature: Cone
+    required: false
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Cone goes here...)
+    results: []
+
+  - feature: Hard Shadows
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Hard Shadows goes here...)
+    results: []
+
+  - feature: Soft Shadows
+    required: false
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Soft Shadows goes here...)
+    results: []
+
+  - feature: Transmission
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Transmission goes here...)
+    results: []
+
+  - feature: Checkerboard
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Checkerboard goes here...)
+    results: []
+
+  - feature: Phong Material
+    required: true
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Phong Material goes here...)
+    results: []
+
+  - feature: Special Material
+    required: false
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Special Material goes here...)
+    results: []
+
+  - feature: Custom Scene
+    required: false
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Custom Scene goes here...)
+    results: []
+
+  - feature: Animation
+    required: false
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Animation goes here...)
+    results: []
+
+  - feature: Art Contest
+    required: false
+    implemented: false
+    description_html: >
+      (Your description of your implementation of Art Contest goes here...)
+    results: []
+
+# Students who used AI-based coding tool(s) to work on this assignment should
+# answer these questions: What tool(s) did you use? How did it work for you? Was
+# it helpful? (To add text here, change the null to > and add indented text
+# below it.)
+ai_code_tools: null
+
+# [OPTIONAL] Please provide us with feedback on your experience working on this
+# assignment. For example, approximately how many hours did you spend on it?
+# What parts were the most difficult or confusing to work through? Do you have
+# any suggestions on how to improve this assignment for the future? Thank you
+# for your feedback! (To add text here, change the null to > and add indented
+# text below it.)
+feedback: null

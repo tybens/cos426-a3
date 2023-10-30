@@ -1,0 +1,24 @@
+/* Need to make the main div absolute so that the header text floats on top of
+   the mesh canvas.
+ */
+#main-div {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Need to add a text shadow so that we can still see the header text. */
+h1,
+h2 {
+  opacity: 0.5;
+  text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000,
+    1px 1px 1px #000;
+}
+
+/* Also adjust the size of the header text so that it takes up less space. */
+h1 {
+  font-size: 115%;
+}
+h2 {
+  font-size: 100%;
+}

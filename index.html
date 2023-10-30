@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- try to discourage browser from keeping page in cache -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <meta http-equiv="cache-control" content="no-store" />
+
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="css/style.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="css/header.css"
+    />
+  </head>
+  <body>
+    <script src="js-lib/jquery.slim.min.js"></script>
+    <script src="js-lib/js-yaml.min.js"></script>
+    <script src="js-lib/stats.min.js"></script>
+    <script src="js-lib/three.js/three.min.js"></script>
+    <script src="js-lib/three.js/OBJLoader.js"></script>
+    <script src="js-lib/glMatrix.min.js"></script>
+
+    <script src="assignment.js"></script>
+    <script src="js-course/global.js"></script>
+
+    <script src="js-course/parser.js"></script>
+    <script src="js-course/raytracer.js"></script>
+    <script src="js-course/scene.js"></script>
+    <script src="js-course/displayStats.js"></script>
+    <script src="js-course/main.js"></script>
+    <script src="js-course/page.js"></script>
+    <script>
+      Page.TITLE = "Interactive Mode";
+    </script>
+
+    <div id="stats"></div>
+
+    <div id="main-div">
+      <h1 id="title"></h1>
+      <h2>Switch to: <a href="writeup.html">Writeup</a></h2>
+      <h2 id="student"></h2>
+
+      <!-- for downloading -->
+      <div>
+        <script src="js-course/download.js"></script>
+        <a id="download-link" download="download"></a>
+      </div>
+    </div>
+    <div id="alert-div" title="alert"></div>
+  </body>
+</html>

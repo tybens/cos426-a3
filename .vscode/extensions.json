@@ -1,0 +1,5 @@
+{
+  "#": "Prettier for formatting JavaScript, HTML, and YAML",
+  "##": "Clang-Format for formatting GLSL (A3)",
+  "recommendations": ["esbenp.prettier-vscode", "xaver.clang-format"]
+}

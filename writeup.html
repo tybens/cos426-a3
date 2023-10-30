@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- try to discourage browser from keeping page in cache -->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <meta http-equiv="cache-control" content="no-store" />
+
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="css/style.css"
+    />
+  </head>
+
+  <body>
+    <script src="js-lib/jquery.slim.min.js"></script>
+    <script src="js-lib/js-yaml.min.js"></script>
+
+    <script src="assignment.js"></script>
+    <script src="js-course/global.js"></script>
+
+    <script src="js-course/parser.js"></script>
+    <script src="js-course/writeup.js"></script>
+    <script src="js-course/page.js"></script>
+    <script>
+      Page.TITLE = "Writeup";
+    </script>
+
+    <div id="main-div">
+      <h1 id="title"></h1>
+      <h2>Switch to: <a href="index.html">Interactive Editor</a></h2>
+      <div class="selectable">
+        <h2 id="student"></h2>
+        <div id="collaboration"></div>
+        <div id="features-list"></div>
+      </div>
+
+      <div id="error"></div>
+
+      <div id="features-descriptions"></div>
+
+      <div id="feedback"></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+# This file sets config settings for Prettier formatting
+
+# As long as at least one setting is defined here, this will be the only config
+# used (so any user settings will be overridden). Any unspecified settings will
+# use the default values.
+
+printWidth: 80
+tabWidth: 2
