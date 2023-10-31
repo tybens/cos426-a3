@@ -190,7 +190,33 @@ float find_intersection_with_triangle(Ray ray, vec3 t1, vec3 t2, vec3 t3,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 29 lines of code.
   // currently reports no intersection
-  return INFINITY;
+  vec3 E1 = t2 - t1;
+  vec3 E2 = t3 - t1;
+  vec3 norm = normalize(cross(E1, E2));
+  float dist = dot(norm, t1);
+  Intersection planeIntersect;
+
+  float len = find_intersection_with_plane(ray, norm, dist, planeIntersect);
+
+  // Check if the ray is parallel
+  if (is_infinity(len)) {
+    return INFINITY;
+  };
+
+  // Check if the intersection point is inside the triangle (barycentric)
+  vec3 P = planeIntersect.position;
+  float N_sq = dot(norm, norm);
+  float alpha = dot(norm, cross(t1 - P, t2 - P)) / N_sq;
+  float beta = dot(norm, cross(t3 - P, t1 - P)) / N_sq;
+
+  if (!((alpha >= 0.0) && (beta >= 0.0) && ((alpha + beta) <= 1.0))) {
+    return INFINITY;
+  }
+
+  intersect.position = planeIntersect.position;
+  intersect.normal = planeIntersect.normal;
+  return len;
+
   // --------------- STUDENT CODE END ----------------
 }
 
@@ -203,6 +229,30 @@ float find_intersection_with_sphere(Ray ray, vec3 center, float radius,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 28 lines of code.
   // currently reports no intersection
+  vec3 L = center - ray.origin;
+  float tca = dot(L, ray.direction);
+  if (tca < 0.0) {
+    return INFINITY;
+  }
+
+  float d2 = dot(L, L) - tca * tca;
+  if (d2 > radius * radius) {
+    return INFINITY;
+  }
+
+  float thc = sqrt(radius * radius - d2);
+
+  float t0 = tca - thc;
+  float t1 = tca + thc;
+  // If t0 is positive, it's the closest intersection
+  float t = min(t0, t1);
+  if (t > 0.0) {
+    vec3 pos = ray_get_offset(ray, t);
+    intersect.position = pos;
+    intersect.normal = normalize(pos - center);
+    return t;
+  }
+
   return INFINITY;
   // --------------- STUDENT CODE END ----------------
 }
@@ -358,6 +408,23 @@ bool point_in_shadow(vec3 pos, vec3 light_vector) {
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 14 lines of code.
   // nothing is in shadow
+  vec3 ray_dir = normalize(light_vector);
+
+  // create a ray from the light and fire it off
+  Ray shadow_ray;
+  shadow_ray.origin = pos + EPS * ray_dir;
+  shadow_ray.direction = ray_dir;
+
+  Material hit_material;
+  Intersection intersect;
+
+  float t = ray_intersect_scene(shadow_ray, hit_material, intersect);
+  if (t < EPS || t >= INFINITY) {
+    return false;
+  } else if (t < length(light_vector)) {
+    return true;
+  }
+
   return false;
   // --------------- STUDENT CODE END ----------------
 }
@@ -454,8 +521,17 @@ vec3 calculate_color(Material mat, vec3 intersection_pos, vec3 normal_vector,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 9 lines of code.
   // Return diffuse color by default, so you can see something for now.
-  return diffuse_color;
-  // return output_color;
+  for (int i = 0; i < MAX_LIGHTS; i++) {
+    if (i >= num_lights) {
+      break;
+    }
+    vec3 light_contribution =
+        get_light_contribution(lights[i], mat, intersection_pos, normal_vector,
+                               eye_vector, phong_only, diffuse_color);
+    // Add diffuse contribution
+    output_color += light_contribution;
+  }
+  return output_color;
   // --------------- STUDENT CODE END ----------------
 }
 
@@ -483,6 +559,21 @@ vec3 calculate_reflection_vector(Material material, vec3 direction,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 6 lines of code.
   // Return mirror direction by default, so you can see something for now.
+  // TODO: check: use negative direction for reverse ray?
+  float cos_theta_i = dot(-direction, normal_vector);
+  float sin2_theta_i = max(0.0, 1.0 - cos_theta_i * cos_theta_i);
+  float sin2_theta_t = eta * eta * sin2_theta_i;
+
+  // Total internal reflection
+  if (sin2_theta_t >= 1.0) {
+    return vec3(0.0, 0.0, 0.0);
+  }
+
+  float cos_theta_t = sqrt(1.0 - sin2_theta_t);
+  vec3 refracted_dir =
+      eta * direction + (eta * cos_theta_i - cos_theta_t) * normal_vector;
+  // return normalize(refracted_dir);
+  // return refract(normalize(direction), normal_vector, eta);
   return reflect(direction, normal_vector);
   // --------------- STUDENT CODE END ----------------
 }
@@ -520,6 +611,10 @@ vec3 trace_ray(Ray ray) {
     Intersection intersect;
     // -------------- STUDENT CODE BEGIN ---------------
     // Our reference solution uses 4 lines of code.
+    float t = ray_intersect_scene(ray, hit_material, intersect);
+    if (t < EPS || t >= INFINITY) {
+      break;
+    }
     // --------------- STUDENT CODE END ----------------
 
     // Compute the vector from the ray towards the intersection.
@@ -557,6 +652,10 @@ vec3 trace_ray(Ray ray) {
     // (2) Then break out of the loop (i.e. do not trace the ray any further).
     // -------------- STUDENT CODE BEGIN ---------------
     // Our reference solution uses 4 lines of code.
+    if (hit_material.reflectivity == 0.0) {
+      result_color += result_weight * output_color;
+      break;
+    }
     // --------------- STUDENT CODE END ----------------
 
     // If the material is reflective or refractive...
@@ -571,6 +670,16 @@ vec3 trace_ray(Ray ray) {
     //     it is the appropriate weight for the next ray's color.
     // -------------- STUDENT CODE BEGIN ---------------
     // Our reference solution uses 8 lines of code.
+    // (1)
+    vec3 next_dir = calculate_reflection_vector(hit_material, eye_vector,
+                                                normal_vector, is_inside_obj);
+    // (2)
+    ray.direction = normalize(next_dir);
+    ray.origin = intersection_pos + EPS * ray.direction;
+    // (3)
+    result_color += result_weight * output_color;
+    // (4) TODO: check this?
+    result_weight *= hit_material.reflectivity;
     // --------------- STUDENT CODE END ----------------
   }
 
