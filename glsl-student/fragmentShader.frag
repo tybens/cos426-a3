@@ -221,6 +221,7 @@ float find_intersection_with_triangle(Ray ray, vec3 t1, vec3 t2, vec3 t3,
     return INFINITY;
   }
 
+  // return INFINITY;
   intersect.position = planeIntersect.position;
   intersect.normal = planeIntersect.normal;
   return len;
@@ -287,30 +288,31 @@ float find_intersection_with_box(Ray ray, vec3 pmin, vec3 pmax,
   // Our reference solution uses 39 lines of code.
   // currently reports no intersection
   // List of faces with their normals and representative points
-  // vec3[6] normals = [
-  //   vec3(1, 0, 0), vec3(-1, 0, 0), vec3(0, 1, 0), vec3(0, -1, 0), vec3(0, 0,
-  //   1), vec3(0, 0, -1)
-  // ];
+  // Iterate over each side of the box
+  float dist = INFINITY;
+  for (int i = 0; i < 3; ++i) {
+    for (float sig = -1.0; sig < 2.0; sig += 2.0) {
+      vec3 norm = vec3(0, 0, 0);
+      norm[i] = sig;
 
-  // vec3 representative_points[6] = {vec3(pmax.x, 0, 0), vec3(pmin.x, 0, 0),
-  //                                  vec3(0, pmax.y, 0), vec3(0, pmin.y, 0),
-  //                                  vec3(0, 0, pmax.z), vec3(0, 0, pmin.z)};
+      float planeDist;
+      if (sig == -1.0) {
+        planeDist = dot(norm, pmin);
+      } else {
+        planeDist = dot(norm, pmax);
+      }
 
-  // for (int i = 0; i < 6; i++) {
-  //   vec3 norm = normals[i];
-  //   float dist = dot(norm, representative_points[i]);
+      Intersection tempIntersect;
+      float t =
+          find_intersection_with_plane(ray, norm, planeDist, tempIntersect);
 
-  //   Intersection planeIntersect;
-  //   float len = find_intersection_with_plane(ray, norm, dist,
-  //   planeIntersect);
-
-  //   if (len < INFINITY &&
-  //       is_point_inside_box(planeIntersect.position, pmin, pmax)) {
-  //     closest_distance = len;
-  //     intersect = planeIntersect;
-  //   }
-  // }
-  return INFINITY;
+      if (t < INFINITY &&
+          is_point_inside_box(tempIntersect.position, pmin, pmax) && t > EPS) {
+        choose_closer_intersection(t, dist, tempIntersect, intersect);
+      }
+    }
+  }
+  return dist;
   // --------------- STUDENT CODE END ----------------
 }
 
@@ -615,8 +617,8 @@ vec3 calculate_reflection_vector(Material material, vec3 direction,
   float cos_theta_r = sqrt(1.0 - sin2_theta_r);
   vec3 refracted_dir =
       eta * direction + (eta * cos_theta_i - cos_theta_r) * normal_vector;
-  return normalize(refracted_dir);
-  // return refract(direction, normal_vector, eta);
+  // return normalize(refracted_dir);
+  return refract(direction, normal_vector, eta);
   // return reflect(direction, normal_vector);
   // --------------- STUDENT CODE END ----------------
 }
