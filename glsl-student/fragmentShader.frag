@@ -190,10 +190,18 @@ float find_intersection_with_triangle(Ray ray, vec3 t1, vec3 t2, vec3 t3,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 29 lines of code.
   // currently reports no intersection
-  vec3 E1 = t2 - t1;
-  vec3 E2 = t3 - t1;
+  vec3 E1 = t1 - t3;
+  vec3 E2 = t2 - t3;
   vec3 norm = normalize(cross(E1, E2));
-  float dist = dot(norm, t1);
+
+  // Ensure that the normal is pointing towards the ray's origin
+  vec3 toRayOrigin =
+      ray.origin - t3; // Vector pointing from t3 to the ray's origin
+  if (dot(norm, toRayOrigin) < 0.0) {
+    norm = -norm; // Flip the normal direction
+  }
+
+  float dist = dot(norm, t3);
   Intersection planeIntersect;
 
   float len = find_intersection_with_plane(ray, norm, dist, planeIntersect);
@@ -231,7 +239,7 @@ float find_intersection_with_sphere(Ray ray, vec3 center, float radius,
   // currently reports no intersection
   vec3 L = center - ray.origin;
   float tca = dot(L, ray.direction);
-  if (tca < 0.0) {
+  if (is_zero(tca)) {
     return INFINITY;
   }
 
@@ -245,16 +253,26 @@ float find_intersection_with_sphere(Ray ray, vec3 center, float radius,
   float t0 = tca - thc;
   float t1 = tca + thc;
   // If t0 is positive, it's the closest intersection
-  float t = min(t0, t1);
-  if (t > 0.0) {
-    vec3 pos = ray_get_offset(ray, t);
+  if (t0 > EPS) {
+    vec3 pos = ray_get_offset(ray, t0);
     intersect.position = pos;
-    intersect.normal = normalize(pos - center);
-    return t;
+    intersect.normal = (pos - center) / length(pos - center);
+    return t0;
+  } else if (t1 > EPS) {
+    vec3 pos = ray_get_offset(ray, t1);
+    intersect.position = pos;
+    intersect.normal = (pos - center) / length(pos - center);
+    return t1;
   }
 
   return INFINITY;
   // --------------- STUDENT CODE END ----------------
+}
+
+bool is_point_inside_box(const vec3 point, const vec3 pmin, const vec3 pmax) {
+  return (point.x >= pmin.x - EPS && point.x <= pmax.x + EPS) &&
+         (point.y >= pmin.y - EPS && point.y <= pmax.y + EPS) &&
+         (point.z >= pmin.z - EPS && point.z <= pmax.z + EPS);
 }
 
 /**
@@ -268,6 +286,30 @@ float find_intersection_with_box(Ray ray, vec3 pmin, vec3 pmax,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 39 lines of code.
   // currently reports no intersection
+  // List of faces with their normals and representative points
+  // vec3[6] normals = [
+  //   vec3(1, 0, 0), vec3(-1, 0, 0), vec3(0, 1, 0), vec3(0, -1, 0), vec3(0, 0,
+  //   1), vec3(0, 0, -1)
+  // ];
+
+  // vec3 representative_points[6] = {vec3(pmax.x, 0, 0), vec3(pmin.x, 0, 0),
+  //                                  vec3(0, pmax.y, 0), vec3(0, pmin.y, 0),
+  //                                  vec3(0, 0, pmax.z), vec3(0, 0, pmin.z)};
+
+  // for (int i = 0; i < 6; i++) {
+  //   vec3 norm = normals[i];
+  //   float dist = dot(norm, representative_points[i]);
+
+  //   Intersection planeIntersect;
+  //   float len = find_intersection_with_plane(ray, norm, dist,
+  //   planeIntersect);
+
+  //   if (len < INFINITY &&
+  //       is_point_inside_box(planeIntersect.position, pmin, pmax)) {
+  //     closest_distance = len;
+  //     intersect = planeIntersect;
+  //   }
+  // }
   return INFINITY;
   // --------------- STUDENT CODE END ----------------
 }
@@ -546,6 +588,7 @@ vec3 calculate_color(Material mat, vec3 intersection_pos, vec3 normal_vector,
 vec3 calculate_reflection_vector(Material material, vec3 direction,
                                  vec3 normal_vector, bool is_inside_obj) {
   if (material.reflect_type == MIRROR_REFLECT) {
+    // TODO: adding a negative to direction makes it work WTF
     return reflect(direction, normal_vector);
   }
   // If it's not mirror, then it is a refractive material like glass.
@@ -562,19 +605,19 @@ vec3 calculate_reflection_vector(Material material, vec3 direction,
   // TODO: check: use negative direction for reverse ray?
   float cos_theta_i = dot(-direction, normal_vector);
   float sin2_theta_i = max(0.0, 1.0 - cos_theta_i * cos_theta_i);
-  float sin2_theta_t = eta * eta * sin2_theta_i;
+  float sin2_theta_r = eta * eta * sin2_theta_i;
 
   // Total internal reflection
-  if (sin2_theta_t >= 1.0) {
+  if (sin2_theta_r >= 1.0) {
     return vec3(0.0, 0.0, 0.0);
   }
 
-  float cos_theta_t = sqrt(1.0 - sin2_theta_t);
+  float cos_theta_r = sqrt(1.0 - sin2_theta_r);
   vec3 refracted_dir =
-      eta * direction + (eta * cos_theta_i - cos_theta_t) * normal_vector;
-  // return normalize(refracted_dir);
-  // return refract(normalize(direction), normal_vector, eta);
-  return reflect(direction, normal_vector);
+      eta * direction + (eta * cos_theta_i - cos_theta_r) * normal_vector;
+  return normalize(refracted_dir);
+  // return refract(direction, normal_vector, eta);
+  // return reflect(direction, normal_vector);
   // --------------- STUDENT CODE END ----------------
 }
 
@@ -612,7 +655,7 @@ vec3 trace_ray(Ray ray) {
     // -------------- STUDENT CODE BEGIN ---------------
     // Our reference solution uses 4 lines of code.
     float t = ray_intersect_scene(ray, hit_material, intersect);
-    if (t < EPS || t >= INFINITY) {
+    if (abs(t) < EPS || t >= INFINITY) {
       break;
     }
     // --------------- STUDENT CODE END ----------------
@@ -652,7 +695,7 @@ vec3 trace_ray(Ray ray) {
     // (2) Then break out of the loop (i.e. do not trace the ray any further).
     // -------------- STUDENT CODE BEGIN ---------------
     // Our reference solution uses 4 lines of code.
-    if (hit_material.reflectivity == 0.0) {
+    if (is_zero(hit_material.reflectivity)) {
       result_color += result_weight * output_color;
       break;
     }
@@ -671,7 +714,7 @@ vec3 trace_ray(Ray ray) {
     // -------------- STUDENT CODE BEGIN ---------------
     // Our reference solution uses 8 lines of code.
     // (1)
-    vec3 next_dir = calculate_reflection_vector(hit_material, eye_vector,
+    vec3 next_dir = calculate_reflection_vector(hit_material, ray.direction,
                                                 normal_vector, is_inside_obj);
     // (2)
     ray.direction = normalize(next_dir);
