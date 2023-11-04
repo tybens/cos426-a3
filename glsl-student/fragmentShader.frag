@@ -189,42 +189,76 @@ float find_intersection_with_triangle(Ray ray, vec3 t1, vec3 t2, vec3 t3,
                                       out Intersection intersect) {
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 29 lines of code.
-  // currently reports no intersection
-  vec3 E1 = t1 - t3;
-  vec3 E2 = t2 - t3;
-  vec3 norm = normalize(cross(E1, E2));
+  // using the optimized solution, this solution was helped by chatGPT.
+  vec3 E1 = t2 - t1;
+  vec3 E2 = t3 - t1;
+  vec3 h = cross(ray.direction, E2);
+  float a = dot(E1, h);
 
-  // Ensure that the normal is pointing towards the ray's origin
-  vec3 toRayOrigin =
-      ray.origin - t3; // Vector pointing from t3 to the ray's origin
-  if (dot(norm, toRayOrigin) < 0.0) {
-    norm = -norm; // Flip the normal direction
+  if (a > -EPS && a < EPS)
+    return INFINITY; // This means the ray is parallel to the triangle.
+
+  float f = 1.0 / a;
+  vec3 s = ray.origin - t1;
+  float u = f * dot(s, h);
+
+  if (is_neg(u) || u > 1.0)
+    return INFINITY; // The intersection is outside of the triangle.
+
+  vec3 q = cross(s, E1);
+  float v = f * dot(ray.direction, q);
+
+  if (is_neg(v) || (u + v) > 1.0)
+    return INFINITY; // The intersection is outside of the triangle.
+
+  // At this stage we can compute t to find out where the intersection point is
+  // on the line.
+  float t = f * dot(E2, q);
+
+  if (t > EPS) { // Ray intersection
+    vec3 intersectionPoint = ray.origin + ray.direction * t;
+    intersect.position = intersectionPoint;
+    vec3 norm = cross(E1, E2);
+    if (is_pos(dot(ray.direction, norm))) {
+      norm = -norm; // Make sure the normal is outward facing
+    }
+    intersect.normal = normalize(norm);
+    return t;
+  } else {
+    return INFINITY; // This means that there is a line intersection but not a
+                     // ray intersection.
   }
 
-  float dist = dot(norm, t3);
-  Intersection planeIntersect;
+  // trying barycentric: code doesn't work bruh.
+  // Because t1, t2, t3 are in clockwise order, normal is towards the ray
+  // vec3 E1 = t1 - t3;
+  // vec3 E2 = t2 - t3;
+  // vec3 norm = normalize(cross(E1, E2));
 
-  float len = find_intersection_with_plane(ray, norm, dist, planeIntersect);
+  // float dist = dot(norm, t3);
+  // Intersection planeIntersect;
 
-  // Check if the ray is parallel
-  if (is_infinity(len)) {
-    return INFINITY;
-  };
+  // float len = find_intersection_with_plane(ray, norm, dist, planeIntersect);
 
-  // Check if the intersection point is inside the triangle (barycentric)
-  vec3 P = planeIntersect.position;
-  float N_sq = dot(norm, norm);
-  float alpha = dot(norm, cross(t1 - P, t2 - P)) / N_sq;
-  float beta = dot(norm, cross(t3 - P, t1 - P)) / N_sq;
+  // // Check if the ray is parallel
+  // if (is_infinity(len)) {
+  //   return INFINITY;
+  // };
 
-  if (!((alpha >= 0.0) && (beta >= 0.0) && ((alpha + beta) <= 1.0))) {
-    return INFINITY;
-  }
+  // // Check if the intersection point is inside the triangle (barycentric)
+  // vec3 P = planeIntersect.position;
+  // float N_sq = dot(norm, norm);
+  // float alpha = dot(norm, cross(t1 - P, t2 - P)) / N_sq;
+  // float beta = dot(norm, cross(t3 - P, t1 - P)) / N_sq;
 
-  // return INFINITY;
-  intersect.position = planeIntersect.position;
-  intersect.normal = planeIntersect.normal;
-  return len;
+  // if (!((alpha >= 0.0) && (beta >= 0.0) && ((alpha + beta) <= 1.0))) {
+  //   return INFINITY;
+  // }
+
+  // // return INFINITY;
+  // intersect.position = planeIntersect.position;
+  // intersect.normal = planeIntersect.normal;
+  // return len;
 
   // --------------- STUDENT CODE END ----------------
 }
@@ -325,7 +359,55 @@ float get_intersect_open_cylinder(Ray ray, vec3 center, vec3 axis, float height,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 36 lines of code.
   // currently reports no intersection
-  return INFINITY;
+  // -------------- STUDENT CODE BEGIN ---------------
+
+  vec3 v_d = ray.origin - center;
+  float phi = dot(v_d, axis);
+  float theta = dot(ray.direction, axis);
+  vec3 v_r_minus_theta_v_a = ray.direction - theta * axis;
+  vec3 v_d_minus_phi_v_a = v_d - phi * axis;
+
+  // Compute the coefficients of the quadratic equation
+  float a = dot(v_r_minus_theta_v_a, v_r_minus_theta_v_a);
+  float b = 2.0 * dot(v_r_minus_theta_v_a, v_d_minus_phi_v_a);
+  float c = dot(v_d_minus_phi_v_a, v_d_minus_phi_v_a) - rad * rad;
+
+  // Solve the quadratic equation
+  float discriminant = b * b - 4.0 * a * c;
+
+  if (is_neg(discriminant)) {
+    return INFINITY; // No real roots, no intersection
+  }
+
+  float sqrt_discriminant = sqrt(discriminant);
+  float t1 = (-b - sqrt_discriminant) / (2.0 * a);
+  float t2 = (-b + sqrt_discriminant) / (2.0 * a);
+
+  // Check if the intersection points are within the finite height of the
+  // cylinder
+  float t = INFINITY;
+  vec2 t_candidates;
+  float t_candidate;
+  Intersection tempIntersect;
+  t_candidates[0] = t1;
+  t_candidates[1] = t2;
+  for (int i = 0; i < 2; i++) {
+    t_candidate = t_candidates[i];
+    if (is_neg(t_candidate))
+      continue; // Intersection behind the ray origin
+
+    vec3 intersection_point = ray_get_offset(ray, t_candidate);
+    tempIntersect.position = intersection_point;
+    float distance_along_axis = dot(intersection_point - center, axis);
+    tempIntersect.normal =
+        normalize(intersection_point - (center + distance_along_axis * axis));
+
+    if (distance_along_axis >= 0.0 && distance_along_axis <= (height + EPS)) {
+      choose_closer_intersection(t_candidate, t, tempIntersect, intersect);
+    }
+  }
+
+  return t;
   // --------------- STUDENT CODE END ----------------
 }
 
@@ -338,6 +420,31 @@ float get_intersect_disc(Ray ray, vec3 center, vec3 norm, float rad,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 19 lines of code.
   // currently reports no intersection
+  float denom = dot(ray.direction, norm);
+
+  // If the ray is parallel to the plane (denominator close to 0), there's no
+  // intersection
+  if (abs(denom) > EPS) {
+    vec3 p0_to_ray_origin = center - ray.origin;
+    // Calculate the intersection t value for the ray with the plane
+    float t = dot(p0_to_ray_origin, norm) / denom;
+
+    // If t is negative, the intersection is behind the ray's origin
+    if (!(is_neg(t))) {
+      // Calculate the exact point of intersection on the plane
+      vec3 p = ray_get_offset(ray, t);
+
+      // Check if the intersection point lies within the disc's radius
+      vec3 vec_from_center = p - center;
+      float distance_squared = dot(vec_from_center, vec_from_center);
+
+      if (distance_squared <= (rad * rad + EPS)) {
+        intersect.position = p;
+        intersect.normal = norm;
+        return t;
+      }
+    }
+  }
   return INFINITY;
   // --------------- STUDENT CODE END ----------------
 }
@@ -380,7 +487,67 @@ float get_intersect_open_cone(Ray ray, vec3 apex, vec3 axis, float height,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 47 lines of code.
   // currently reports no intersection
-  return INFINITY;
+  vec3 vd = ray.origin - apex;
+  float phi = dot(vd, axis);
+  float theta = dot(ray.direction, axis);
+
+  // Half-angle of the cone (alpha)
+  float tanAlpha = radius / height;
+  float cosAlpha2 = cos(atan(tanAlpha)) * cos(atan(tanAlpha));
+  float sinAlpha2 = sin(atan(tanAlpha)) * sin(atan(tanAlpha));
+
+  float a = dot(ray.direction - theta * axis, ray.direction - theta * axis) *
+                cosAlpha2 -
+            theta * theta * sinAlpha2;
+  float b =
+      2.0 * (dot(ray.direction - theta * axis, vd - phi * axis) * cosAlpha2 -
+             theta * phi * sinAlpha2);
+  float c =
+      dot(vd - phi * axis, vd - phi * axis) * cosAlpha2 - phi * phi * sinAlpha2;
+
+  float discriminant = b * b - 4.0 * a * c;
+
+  if (is_neg(discriminant)) {
+    return INFINITY; // No intersection
+  }
+
+  float t0 = (-b - sqrt(discriminant)) / (2.0 * a);
+  float t1 = (-b + sqrt(discriminant)) / (2.0 * a);
+
+  float t = INFINITY;
+  vec3 q;
+
+  // Check t0 for valid intersection within cone bounds
+  if (is_pos(t0)) {
+    q = ray_get_offset(ray, t0);
+    if (is_pos(dot(axis, q - apex)) &&
+        is_neg(dot(axis, q - (apex + height * axis)))) {
+      t = t0;
+      intersect.position = q;
+      // Normal calculation for cone surface at point q
+      vec3 normal = normalize(q - apex - dot(q - apex, axis) * axis);
+      intersect.normal = is_neg(dot(normal, ray.direction))
+                             ? normal
+                             : -normal; // Orienting normal
+    }
+  }
+
+  // Check t1 for valid intersection within cone bounds
+  if (is_pos(t1) && is_neg(t1 - t)) {
+    q = ray_get_offset(ray, t1);
+    if (is_pos(dot(axis, q - apex)) &&
+        is_neg(dot(axis, q - (apex + height * axis)))) {
+      t = t1;
+      intersect.position = q;
+      // Normal calculation for cone surface at point q
+      vec3 normal = normalize(q - apex - dot(q - apex, axis) * axis);
+      intersect.normal = is_neg(dot(normal, ray.direction))
+                             ? normal
+                             : -normal; // Orienting normal
+    }
+  }
+
+  return t;
   // --------------- STUDENT CODE END ----------------
 }
 
@@ -463,9 +630,9 @@ bool point_in_shadow(vec3 pos, vec3 light_vector) {
   Intersection intersect;
 
   float t = ray_intersect_scene(shadow_ray, hit_material, intersect);
-  if (t < EPS || t >= INFINITY) {
+  if (t < EPS || is_infinity(t)) {
     return false;
-  } else if (t < length(light_vector)) {
+  } else if (t < length(light_vector) + EPS) {
     return true;
   }
 
