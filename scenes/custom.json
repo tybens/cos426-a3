@@ -29,28 +29,76 @@
       }
     },
     {
-      "comment": "// load a cube using obj file with scale and offset",
-      "type": "mesh",
-      "objFile": "scenes/objects/cube.obj",
-      "scale": 8,
-      "offset": [-15, -3, 5],
+      "comment": "// the bottom sphere of the snowman",
+      "type": "sphere",
+      "center": [0, -15, 15],
+      "radius": 10,
       "material": {
         "type": "PHONG_MATERIAL",
-        "color": [0.6, 0.25, 0.55],
-        "shininess": 1000,
-        "specular": [1, 1, 1],
-        "reflectType": "MIRROR_REFLECT",
-        "reflectivity": 1
+        "color": [1, 1, 1],
+        "shininess": 10,
+        "specular": [0.2, 0.2, 0.2]
       }
     },
     {
-      "comment": "// load an icosahedron using obj file with scale and offset",
-      "type": "mesh",
-      "objFile": "scenes/objects/icosahedron.obj",
-      "scale": 12,
-      "offset": [5, -9, 8],
+      "comment": "// the middle sphere of the snowman",
+      "type": "sphere",
+      "center": [0, -5, 15],
+      "radius": 7.5,
       "material": {
-        "color": [0.1, 0.5, 0.6]
+        "type": "PHONG_MATERIAL",
+        "color": [1, 1, 1],
+        "shininess": 10,
+        "specular": [0.2, 0.2, 0.2]
+      }
+    },
+    {
+      "comment": "// the top sphere of the snowman",
+      "type": "sphere",
+      "center": [0, 3, 15],
+      "radius": 5,
+      "material": {
+        "type": "PHONG_MATERIAL",
+        "color": [1, 1, 1],
+        "shininess": 10,
+        "specular": [0.2, 0.2, 0.2]
+      }
+    },
+    {
+      "comment": "// the eye",
+      "type": "sphere",
+      "center": [-1, 6, 11],
+      "radius": 0.5,
+      "material": {
+        "type": "PHONG_MATERIAL",
+        "color": [0, 0, 0],
+        "shininess": 100,
+        "specular": [0.9, 0.9, 0.9]
+      }
+    },
+    {
+      "comment": "// the right eye",
+      "type": "sphere",
+      "center": [1, 6, 11],
+      "radius": 0.5,
+      "material": {
+        "type": "PHONG_MATERIAL",
+        "color": [0, 0, 0],
+        "shininess": 100,
+        "specular": [0.9, 0.9, 0.9]
+      }
+    },
+    {
+      "comment": "// the nose",
+      "type": "cone",
+      "topCenter": [0, 4, 8],
+      "bottomCenter": [0, 4, 11],
+      "radius": 1,
+      "material": {
+        "type": "PHONG_MATERIAL",
+        "color": [1, 0.65, 0],
+        "shininess": 10,
+        "specular": [0.5, 0.5, 0.5]
       }
     }
   ]

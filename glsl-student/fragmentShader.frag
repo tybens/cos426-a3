@@ -147,6 +147,37 @@ bool choose_closer_intersection(float dist, inout float best_dist,
 // -------------- STUDENT CODE BEGIN ---------------
 // Our reference solution uses 117 lines of code.
 // You may use this space for any general convenience functions.
+
+bool is_point_inside_box(const vec3 point, const vec3 pmin, const vec3 pmax) {
+  return (point.x >= pmin.x - EPS && point.x <= pmax.x + EPS) &&
+         (point.y >= pmin.y - EPS && point.y <= pmax.y + EPS) &&
+         (point.z >= pmin.z - EPS && point.z <= pmax.z + EPS);
+}
+
+/// Function to interpolate between two points
+float interpolate(float a, float b, float x) {
+  float ft = x * 3.1415927;
+  float f = (1.0 - cos(ft)) * 0.5;
+  return a * (1.0 - f) + b * f;
+}
+
+// Pseudo Perlin noise implementation
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+
+  // Four corners in 2D of a tile
+  float a = rand(i);
+  float b = rand(i + vec2(1.0, 0.0));
+  float c = rand(i + vec2(0.0, 1.0));
+  float d = rand(i + vec2(1.0, 1.0));
+
+  // Smooth Interpolation
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return interpolate(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) +
+         (d - b) * u.x * u.y;
+}
+
 // --------------- STUDENT CODE END ----------------
 
 // forward declaration
@@ -304,12 +335,6 @@ float find_intersection_with_sphere(Ray ray, vec3 center, float radius,
   // --------------- STUDENT CODE END ----------------
 }
 
-bool is_point_inside_box(const vec3 point, const vec3 pmin, const vec3 pmax) {
-  return (point.x >= pmin.x - EPS && point.x <= pmax.x + EPS) &&
-         (point.y >= pmin.y - EPS && point.y <= pmax.y + EPS) &&
-         (point.z >= pmin.z - EPS && point.z <= pmax.z + EPS);
-}
-
 /**
  * Finds the intersection of a ray with a box, defined by its min and max
  * corners.
@@ -402,7 +427,7 @@ float get_intersect_open_cylinder(Ray ray, vec3 center, vec3 axis, float height,
     tempIntersect.normal =
         normalize(intersection_point - (center + distance_along_axis * axis));
 
-    if (distance_along_axis >= 0.0 && distance_along_axis <= (height + EPS)) {
+    if (distance_along_axis > 0.0 && distance_along_axis <= height) {
       choose_closer_intersection(t_candidate, t, tempIntersect, intersect);
     }
   }
@@ -420,31 +445,28 @@ float get_intersect_disc(Ray ray, vec3 center, vec3 norm, float rad,
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 19 lines of code.
   // currently reports no intersection
-  float denom = dot(ray.direction, norm);
+  Intersection tempIntersect;
+  // Calculate the intersection t value for the ray with the plane
+  float t =
+      find_intersection_with_plane(ray, norm, dot(norm, center), tempIntersect);
 
-  // If the ray is parallel to the plane (denominator close to 0), there's no
-  // intersection
-  if (abs(denom) > EPS) {
-    vec3 p0_to_ray_origin = center - ray.origin;
-    // Calculate the intersection t value for the ray with the plane
-    float t = dot(p0_to_ray_origin, norm) / denom;
-
-    // If t is negative, the intersection is behind the ray's origin
-    if (!(is_neg(t))) {
-      // Calculate the exact point of intersection on the plane
-      vec3 p = ray_get_offset(ray, t);
-
-      // Check if the intersection point lies within the disc's radius
-      vec3 vec_from_center = p - center;
-      float distance_squared = dot(vec_from_center, vec_from_center);
-
-      if (distance_squared <= (rad * rad + EPS)) {
-        intersect.position = p;
-        intersect.normal = norm;
-        return t;
-      }
-    }
+  if (is_infinity(t)) {
+    return INFINITY;
   }
+
+  // If t is negative, the intersection is behind the ray's origin
+  vec3 p = tempIntersect.position;
+
+  // Check if the intersection point lies within the disc's radius
+  vec3 vec_from_center = p - center;
+  float dist = length(vec_from_center);
+
+  if (dist < rad) {
+    intersect.position = p;
+    intersect.normal = tempIntersect.normal;
+    return t;
+  }
+
   return INFINITY;
   // --------------- STUDENT CODE END ----------------
 }
@@ -586,11 +608,42 @@ vec3 calculate_special_diffuse_color(Material mat, vec3 intersection_pos,
                                      vec3 normal_vector) {
   if (mat.special == CHECKERBOARD) {
     // -------------- STUDENT CODE BEGIN ---------------
-    // Our reference solution uses 7 lines of code.
+    // Optionally scale the position before flooring
+    float scale = 4.0;
+    // Add EPS to the position to prevent speckling at the boundaries
+    vec3 pos_eps = intersection_pos + vec3(EPS, EPS, EPS);
+    vec3 scaled_pos = pos_eps / scale;
+    // Quantize it to the unit grid by flooring the position
+    vec3 floored_pos = floor(scaled_pos);
+    // Calculate the checkerboard pattern
+    float checker = mod(floored_pos.x + floored_pos.y + floored_pos.z, 2.0);
+
+    vec3 color = (checker < 1.0) ? mat.color : mat.color - vec3(0.3, 0.3, 0.3);
+    return color;
     // --------------- STUDENT CODE END ----------------
   } else if (mat.special == MY_SPECIAL) {
     // -------------- STUDENT CODE BEGIN ---------------
     // Our reference solution uses 31 lines of code.
+    // Find a vector that is not parallel to the normal
+    vec3 nonParallel =
+        abs(normal_vector.y) < 0.999 ? vec3(0, 1, 0) : vec3(1, 0, 0);
+
+    // Create two tangent vectors
+    vec3 tangent = normalize(cross(normal_vector, nonParallel));
+    vec3 bitangent = cross(normal_vector, tangent);
+
+    // Project the intersection point onto the tangent/bitangent plane
+    vec2 planeProjection =
+        vec2(dot(intersection_pos, tangent), dot(intersection_pos, bitangent));
+
+    // Now we can use planeProjection as your 2D coordinates for noise
+    float n =
+        noise(planeProjection *
+              2.0); // Adjust the 5.0 scaling as needed for your noise pattern
+    // Use the noise to perturb the color
+    vec3 color = mix(mat.color, mat.color * n, 0.5);
+
+    return color;
     // --------------- STUDENT CODE END ----------------
   }
 
@@ -705,6 +758,16 @@ vec3 get_light_contribution(Light light, Material mat, vec3 intersection_pos,
       vec3 phong_term = vec3(0.0, 0.0, 0.0);
       // -------------- STUDENT CODE BEGIN ---------------
       // Our reference solution uses 5 lines of code.
+      // Calculate reflection vector
+      vec3 reflect_dir = reflect(-light_vector, normal_vector);
+      vec3 view_dir = normalize(eye_vector - intersection_pos);
+
+      // Calculate specular component
+      float spec =
+          pow(min(max(dot(view_dir, reflect_dir), 0.0), 1.0), mat.shininess);
+      phong_term =
+          light.color * mat.specular * spec; // Correctly apply attenuation
+
       // --------------- STUDENT CODE END ----------------
       contribution += phong_term;
     }

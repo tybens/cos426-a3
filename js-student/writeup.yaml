@@ -31,56 +31,56 @@ collaboration: []
 features:
   - feature: Trace Ray
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Trace Ray goes here...)
     results: []
 
   - feature: Calculate Color
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Calculate Color goes here...)
     results: []
 
   - feature: Triangle
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Triangle goes here...)
     results: []
 
   - feature: Sphere
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Sphere goes here...)
     results: []
 
   - feature: Axis-aligned Box
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Axis-aligned Box goes here...)
     results: []
 
   - feature: Cylinder
     required: false
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Cylinder goes here...)
     results: []
 
   - feature: Cone
     required: false
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Cone goes here...)
     results: []
 
   - feature: Hard Shadows
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Hard Shadows goes here...)
     results: []
@@ -94,35 +94,35 @@ features:
 
   - feature: Transmission
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Transmission goes here...)
     results: []
 
   - feature: Checkerboard
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Checkerboard goes here...)
     results: []
 
   - feature: Phong Material
     required: true
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Phong Material goes here...)
     results: []
 
   - feature: Special Material
     required: false
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Special Material goes here...)
     results: []
 
   - feature: Custom Scene
     required: false
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Custom Scene goes here...)
     results: []
@@ -136,7 +136,7 @@ features:
 
   - feature: Art Contest
     required: false
-    implemented: false
+    implemented: true
     description_html: >
       (Your description of your implementation of Art Contest goes here...)
     results: []
