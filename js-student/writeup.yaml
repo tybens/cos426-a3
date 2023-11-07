@@ -227,7 +227,7 @@ features:
 # it helpful? (To add text here, change the null to > and add indented text
 # below it.)
 ai_code_tools: >
-  I used ChatGPT on this assignment. It was very helpful in providing boilerplate code for certain functions. I list them here: cone, cylinder, checkerboard, special. Specifically for special, it was very helpful. I could not find a source that looked exactly similar to GPT's implementation of `noise`; however, I did a lot of research on perlin noise (see my feedback below) to make me feel better about its implementation.
+  I used ChatGPT on this assignment. It was very helpful in providing boilerplate code for certain functions. I list them here: triangle, cone, cylinder, checkerboard, special. Specifically for special, it was very helpful. I could not find a source that looked exactly similar to GPT's implementation of `noise`; however, I did a lot of research on perlin noise (see my feedback below) to make me feel better about its implementation.
 
 # [OPTIONAL] Please provide us with feedback on your experience working on this
 # assignment. For example, approximately how many hours did you spend on it?
