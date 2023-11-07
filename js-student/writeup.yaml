@@ -26,64 +26,104 @@ student:
 late_days_used: 0
 
 # Please list the netids of whom you collaborated with for this assignment.
-collaboration: []
+collaboration: [eveseley]
 
 features:
   - feature: Trace Ray
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Trace Ray goes here...)
-    results: []
+      Trace ray "traces" a ray around a scene and iteratively updates the color. Instead of a while loop, we use a for loop to calculate the intersection of the particular ray and then update it's color and reflection / refraction vector if appropriate.
+    results:
+      - link: >
+          index.html
+        picture: results/trace_ray.png
+        caption_html: >
+          This is the expected result after trace ray is implemented.
 
   - feature: Calculate Color
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Calculate Color goes here...)
-    results: []
+      Calculate color iterates over all of the lights in the scene (or MAX_LIGHTS) and appends the light contribution to the output color of the ray. It is a direct lighting contribution scheme.
+    results:
+      - link: >
+          index.html
+        picture: results/diffuse.png
+        caption_html: >
+          This is the expected result after calculate color is implemented.
 
   - feature: Triangle
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Triangle goes here...)
-    results: []
+      Triangle is a way of calculating whether the ray intersects with a triangle with three points defined. My implementation uses the optimized Moller-Trumbore algorithm. The source provided was used for its math. And chatGPT helped in organizing the rest.
+    results:
+      - link: >
+          index.html
+        picture: results/triangle.png
+        caption_html: >
+          This is the expected result after triangle is implemented.
 
   - feature: Sphere
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Sphere goes here...)
-    results: []
+      My implementation calculates the intersection of a ray and a sphere and updates the intersection position and normal by following the Ray-Sphere Intersection II from Lecture 12.
+    results:
+      - link: >
+          index.html
+        picture: results/sphere.png
+        caption_html: >
+          This is the expected result after sphere is implemented.
 
   - feature: Axis-aligned Box
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Axis-aligned Box goes here...)
-    results: []
+      My implementation iterates over the three normals, for each sign of the normal, for a total of 6 iterations, finding the intersection with each of the 6 planes of an axis aligned box. It chooses the closer intersection using the provided helper function.
+    results:
+      - link: >
+          index.html
+        picture: results/box.png
+        caption_html: >
+          This is the expected result after box is implemented.
 
   - feature: Cylinder
     required: false
     implemented: true
     description_html: >
-      (Your description of your implementation of Cylinder goes here...)
-    results: []
+      The cylinder implementation calculates the intersection with both discs, top and bottom as well as the open cylinder surfaces. It then chooses the closest intersection using the provided helper function.
+    results:
+      - link: >
+          index.html
+        picture: results/cylinder2.png
+        caption_html: >
+          This is the expected result after cylinder is implemented.
 
   - feature: Cone
     required: false
     implemented: true
     description_html: >
-      (Your description of your implementation of Cone goes here...)
-    results: []
+      Cone implementation calculates the intersection with the cone surface and the bottom disc. It then chooses the closest intersection using the provided helper function.
+    results:
+      - link: >
+          index.html
+        picture: results/cone.png
+        caption_html: >
+          This is the expected result after cone is implemented. Also, transmission was implemented before cone, as the picture shows.
 
   - feature: Hard Shadows
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Hard Shadows goes here...)
-    results: []
+      To get hard shadows we create a shadow ray and then check if the shadow ray intersects with any of the objects in the scene. If it does, then we know that the point is in shadow and we do not add the light contribution to the color.
+    results:
+      - link: >
+          index.html
+        picture: results/shadows.png
+        caption_html: >
+          This is the expected result after hard shadows are implemented.
 
   - feature: Soft Shadows
     required: false
@@ -96,36 +136,66 @@ features:
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Transmission goes here...)
-    results: []
+      For transmission we calculate the refraction vector by using the Snell's Law equation. We make sure to normalize too :)
+    results:
+      - link: >
+          index.html
+        picture: results/transmission.png
+        caption_html: >
+          This is the expected result after transmission is implemented.
+      - link: >
+          index.html
+        picture: results/transmission2.png
+        caption_html: >
+          This is a cool zoomed in shot of the transmission effect on the glass orb.
 
   - feature: Checkerboard
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Checkerboard goes here...)
-    results: []
+      To get a checkerboard effect, we quantize the coordinates and scale it to change the size of the resulting checkers before taking the mod to conditionally set the color.
+    results:
+      - link: >
+          index.html
+        picture: results/checkerboard.png
+        caption_html: >
+          This is the expected result after checkerboard is implemented.
 
   - feature: Phong Material
     required: true
     implemented: true
     description_html: >
-      (Your description of your implementation of Phong Material goes here...)
-    results: []
+      The phong implementation follows the math from Lecture and Precept. Also, a lot of influence was gathered by calculating contribution by comparing it to the diffusion (not phong material) calculations.
+    results:
+      - link: >
+          index.html
+        picture: results/phong.png
+        caption_html: >
+          This is the expected result after phong is implemented.
 
   - feature: Special Material
     required: false
     implemented: true
     description_html: >
-      (Your description of your implementation of Special Material goes here...)
-    results: []
+      For special, we first create two tangent vectors to the normal vector. We use them to project the intersection point onto the tangent/bitangent plane. Then we use this projection as the input to the noise function. The output of noise is then used to perturb the color and mix it.
+    results:
+      - link: >
+          index.html
+        picture: results/special.png
+        caption_html: >
+          This is the expected result after special is implemented.
 
   - feature: Custom Scene
     required: false
     implemented: true
     description_html: >
-      (Your description of your implementation of Custom Scene goes here...)
-    results: []
+      My custom scene is a snowman :)
+    results:
+      - link: >
+          index.html
+        picture: results/custom-scene.png
+        caption_html: >
+          Ray Tracer, the snowman. :)
 
   - feature: Animation
     required: false
@@ -139,13 +209,25 @@ features:
     implemented: true
     description_html: >
       (Your description of your implementation of Art Contest goes here...)
-    results: []
+    results:
+      - link: >
+          index.html
+        picture: results/interstellar_inside_mirror_box.png
+        caption_html: >
+          While debugging intersection triangle, I entered the mirror box and saw this. It kinda looks like that scene in interstellar where time is mapped into 3-d space.
+
+      - link: >
+          index.html
+        picture: results/custom2.png
+        caption_html: >
+          I thought my custom scene was kinda cute. So I'll put that here as well :). It's a snowman. It's name is Tracer... Ray Tracer. :)
 
 # Students who used AI-based coding tool(s) to work on this assignment should
 # answer these questions: What tool(s) did you use? How did it work for you? Was
 # it helpful? (To add text here, change the null to > and add indented text
 # below it.)
-ai_code_tools: null
+ai_code_tools: >
+  I used ChatGPT on this assignment. It was very helpful in providing boilerplate code for certain functions. I list them here: cone, cylinder, checkerboard, special. Specifically for special, it was very helpful. I could not find a source that looked exactly similar to GPT's implementation of `noise`; however, I did a lot of research on perlin noise (see my feedback below) to make me feel better about its implementation.
 
 # [OPTIONAL] Please provide us with feedback on your experience working on this
 # assignment. For example, approximately how many hours did you spend on it?
@@ -153,4 +235,5 @@ ai_code_tools: null
 # any suggestions on how to improve this assignment for the future? Thank you
 # for your feedback! (To add text here, change the null to > and add indented
 # text below it.)
-feedback: null
+feedback: >
+  Check out these cool resources for perlin noise https://geniosainz.github.io/Perlin-Noise-Demo/, https://rtouti.github.io/graphics/perlin-noise-algorithm .

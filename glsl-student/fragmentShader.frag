@@ -349,7 +349,7 @@ float find_intersection_with_box(Ray ray, vec3 pmin, vec3 pmax,
   // List of faces with their normals and representative points
   // Iterate over each side of the box
   float dist = INFINITY;
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 3; i++) {
     for (float sig = -1.0; sig < 2.0; sig += 2.0) {
       vec3 norm = vec3(0, 0, 0);
       norm[i] = sig;
@@ -385,7 +385,6 @@ float get_intersect_open_cylinder(Ray ray, vec3 center, vec3 axis, float height,
   // Our reference solution uses 36 lines of code.
   // currently reports no intersection
   // -------------- STUDENT CODE BEGIN ---------------
-
   vec3 v_d = ray.origin - center;
   float phi = dot(v_d, axis);
   float theta = dot(ray.direction, axis);
@@ -548,7 +547,7 @@ float get_intersect_open_cone(Ray ray, vec3 apex, vec3 axis, float height,
       intersect.position = q;
       // Normal calculation for cone surface at point q
       vec3 normal = normalize(q - apex - dot(q - apex, axis) * axis);
-      intersect.normal = is_neg(dot(normal, ray.direction))
+      intersect.normal = is_neg(dot(normal, normalize(ray.direction)))
                              ? normal
                              : -normal; // Orienting normal
     }
@@ -562,6 +561,7 @@ float get_intersect_open_cone(Ray ray, vec3 apex, vec3 axis, float height,
       t = t1;
       intersect.position = q;
       // Normal calculation for cone surface at point q
+
       vec3 normal = normalize(q - apex - dot(q - apex, axis) * axis);
       intersect.normal = is_neg(dot(normal, ray.direction))
                              ? normal
@@ -683,7 +683,7 @@ bool point_in_shadow(vec3 pos, vec3 light_vector) {
   Intersection intersect;
 
   float t = ray_intersect_scene(shadow_ray, hit_material, intersect);
-  if (t < EPS || is_infinity(t)) {
+  if (abs(t) < EPS || is_infinity(t)) {
     return false;
   } else if (t < length(light_vector) + EPS) {
     return true;
@@ -761,13 +761,11 @@ vec3 get_light_contribution(Light light, Material mat, vec3 intersection_pos,
       // Calculate reflection vector
       vec3 reflect_dir = reflect(-light_vector, normal_vector);
       vec3 view_dir = normalize(eye_vector - intersection_pos);
-
       // Calculate specular component
       float spec =
           pow(min(max(dot(view_dir, reflect_dir), 0.0), 1.0), mat.shininess);
-      phong_term =
-          light.color * mat.specular * spec; // Correctly apply attenuation
-
+      phong_term = light.color * mat.specular * spec * diffuse_intensity /
+                   attenuation; // Correctly apply attenuation
       // --------------- STUDENT CODE END ----------------
       contribution += phong_term;
     }
@@ -820,7 +818,6 @@ vec3 calculate_color(Material mat, vec3 intersection_pos, vec3 normal_vector,
 vec3 calculate_reflection_vector(Material material, vec3 direction,
                                  vec3 normal_vector, bool is_inside_obj) {
   if (material.reflect_type == MIRROR_REFLECT) {
-    // TODO: adding a negative to direction makes it work WTF
     return reflect(direction, normal_vector);
   }
   // If it's not mirror, then it is a refractive material like glass.
@@ -833,7 +830,8 @@ vec3 calculate_reflection_vector(Material material, vec3 direction,
   // See lecture 13 slide (lighting) on Snell's law.
   // -------------- STUDENT CODE BEGIN ---------------
   // Our reference solution uses 6 lines of code.
-  // Return mirror direction by default, so you can see something for now.
+  // Return mirror direction by default, so you can see something for
+  // now.
   // TODO: check: use negative direction for reverse ray?
   float cos_theta_i = dot(-direction, normal_vector);
   float sin2_theta_i = max(0.0, 1.0 - cos_theta_i * cos_theta_i);
@@ -847,9 +845,8 @@ vec3 calculate_reflection_vector(Material material, vec3 direction,
   float cos_theta_r = sqrt(1.0 - sin2_theta_r);
   vec3 refracted_dir =
       eta * direction + (eta * cos_theta_i - cos_theta_r) * normal_vector;
-  // return normalize(refracted_dir);
-  return refract(direction, normal_vector, eta);
-  // return reflect(direction, normal_vector);
+  return normalize(refracted_dir);
+
   // --------------- STUDENT CODE END ----------------
 }
 
